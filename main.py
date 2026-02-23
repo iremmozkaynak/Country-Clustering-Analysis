@@ -17,7 +17,7 @@ scaled_df = scale_data(df)
 # 4 — PCA
 pca_df, pca_model = apply_pca(scaled_df, n_components=3)
 
-# best paramaeters for dbscan
+# best parameters for dbscan
 eps, min_sample = find_best_parameters(pca_df)
 
 # 5 — Clustering
@@ -45,7 +45,6 @@ print("Silhouette Score (DBSCAN):", score_dbscan2)
 print("Silhouette Score (HDBSCAN):", score_hdbscan2)
 print("Silhouette Score (Hierarchical):", score_hierarchical2)
 
-# 6 — Comparison Table
 results = pd.DataFrame({
     "Method":[
         "KMeans PCA","DBSCAN PCA","HDBSCAN PCA","Hierarchical PCA",
@@ -59,15 +58,14 @@ results = pd.DataFrame({
 print("\n     MODEL COMPARISON    ")
 print(results)
 
-# 7 — Best Model Selection
+# 6 — Best Model Selection
 best_index = results["Score"].idxmax()
 best_method = results.iloc[best_index]["Method"]
 
 print("\nBest Model:", best_method)
 
 
-
-# 8 — Assign best labels
+# 7 — Assign best labels
 best_labels = [
     labels_kmean,labels_dbscan,labels_hdbscan,labels_hierarchical,
     labels_kmean2,labels_dbscan2,labels_hdbscan2,labels_hierarchical2
@@ -76,7 +74,7 @@ best_labels = [
 df["Class"] = best_labels
 
 
-# 9 — Visualization
+# 8 — Visualization
 plot_boxplots(df)
 
 print("\nShowing maps for all algorithms")

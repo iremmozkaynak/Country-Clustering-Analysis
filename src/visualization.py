@@ -3,6 +3,8 @@ import seaborn as sns
 import plotly.express as px
 import math
 import numpy as np
+import pandas as pd
+import plotly.express as px
 
 def plot_histograms(df, title_prefix=""):
     num_cols = df.select_dtypes(include=[np.number]).columns
@@ -35,27 +37,20 @@ def plot_boxplots(df):
 
 
 def plot_world_map(df, labels, title="Cluster Map"):
-    import plotly.express as px
-    import pandas as pd
 
     map_df = df.copy()
-    map_df["Cluster_ID"] = labels  # Algoritmanın verdiği orijinal etiketler
+    map_df["Cluster_ID"] = labels  
 
-    # 1. Gürültüyü (-1) hariç tutarak her kümenin çocuk ölüm oranı ortalamasını bul
     valid_clusters = map_df[map_df["Cluster_ID"] != -1]
     
-    # Eğer kümeleme geçerliyse ortalamalara göre sırala
     if not valid_clusters.empty:
-        # child_mort'a göre küçükten büyüğe sırala
         cluster_means = valid_clusters.groupby("Cluster_ID")["child_mort"].mean()
         sorted_clusters = cluster_means.sort_values().index.tolist()
     else:
         sorted_clusters = []
 
-    # 2. Dinamik eşleştirme sözlüğü (Dictionary) oluştur
     label_mapping = {"-1": "Transitional / Outlier"}
     
-    # Sıralama: En düşük çocuk ölümü -> Orta -> En yüksek çocuk ölümü
     descriptions = [
         "High Income (No Aid Needed)", 
         "Developing (Need Support)", 
@@ -63,27 +58,22 @@ def plot_world_map(df, labels, title="Cluster Map"):
     ]
     
     for i, cluster_id in enumerate(sorted_clusters):
-        # Eğer 3'ten fazla küme bulduysa hata vermemesi için kontrol
         if i < len(descriptions):
             label_mapping[str(cluster_id)] = descriptions[i]
         else:
             label_mapping[str(cluster_id)] = f"Sub-category {i+1}"
 
-    # 3. Eşleştirmeyi veriye uygula
     map_df["Class_Str"] = map_df["Cluster_ID"].astype(str)
     map_df["Class"] = map_df["Class_Str"].map(label_mapping)
     
-    # Eşleşmeyen bir şey kalırsa orijinal numarasını göstersin
     map_df["Class"] = map_df["Class"].fillna(map_df["Class_Str"])
 
-    # 4. Haritayı çiz
     fig = px.choropleth(
         map_df,
         locationmode="country names",
         locations="country",
         color="Class",
         title=title,
-        # Renklerin her haritada aynı anlama gelmesi için sıralamayı zorlayabilirsin
         category_orders={"Class": [
             "Critical Need", 
             "Developing (Need Support)", 
